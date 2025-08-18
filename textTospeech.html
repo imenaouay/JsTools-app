@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text-to-Speech</title>
+     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Text to Speech</h1>
+            <p class="subtitle">Transform your written content into natural-sounding speech. Enter text, select a voice, and press play.</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="input-container">
+                <textarea id="text" placeholder="Type or paste your text here..."></textarea>
+                <div class="char-count"><span id="char-count">0</span> characters</div>
+            </div>
+            
+            <div class="wave-animation hidden" id="wave-animation">
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+            </div>
+            
+            <div class="controls">
+                <div class="voice-controls">
+                    <label for="voice-select">Select Voice:</label>
+                    <select id="voice-select"></select>
+                </div>
+                
+                <div class="action-buttons">
+                    <button id="stop-button" class="btn btn-stop" title="Stop" disabled>
+                        <i class="fas fa-stop"></i>
+                    </button>
+                    <button id="play-button" class="btn btn-play" title="Play">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="status">
+                <span id="status">Ready to convert text to speech</span>
+                <span id="rate">Speed: 1.0x</span>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Modern Text-to-Speech Converter | Built with Web Speech API </br> By IMDevArt</p>
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements
+        const textarea = document.getElementById("text");
+        const playButton = document.getElementById("play-button");
+        const stopButton = document.getElementById("stop-button");
+        const voiceSelect = document.getElementById("voice-select");
+        const charCount = document.getElementById("char-count");
+        const progressBar = document.getElementById("progress-bar");
+        const statusText = document.getElementById("status");
+        const rateText = document.getElementById("rate");
+        const waveAnimation = document.getElementById("wave-animation");
+
+        // Speech variables
+        let utterance = null;
+        let voices = [];
+        let isSpeaking = false;
+        let startTime = 0;
+        let progressInterval = null;
+        
+        // Initialize
+        function init() {
+            // Load voices when available
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+            
+            // Set up event listeners
+            textarea.addEventListener("input", updateCharCount);
+            textarea.addEventListener("keydown", handleKeyDown);
+            playButton.addEventListener("click", toggleSpeech);
+            stopButton.addEventListener("click", stopSpeech);
+            
+            // Initialize character count
+            updateCharCount();
+        }
+        
+        // Load available voices
+        function loadVoices() {
+            voices = window.speechSynthesis.getVoices();
+            voiceSelect.innerHTML = '';
+            
+            // Filter for English voices
+            const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
+            
+            englishVoices.forEach((voice, index) => {
+                const option = document.createElement("option");
+                option.value = index;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                voiceSelect.appendChild(option);
+            });
+            
+            // Set default voice to the first English voice
+            if (englishVoices.length > 0) {
+                voiceSelect.value = 0;
+            }
+        }
+        
+        // Update character count
+        function updateCharCount() {
+            const count = textarea.value.length;
+            charCount.textContent = count;
+            
+            // Disable play button if no text
+            playButton.disabled = count === 0;
+        }
+        
+        // Handle keyboard shortcuts
+        function handleKeyDown(e) {
+            // Ctrl + Enter to speak
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                toggleSpeech();
+            }
+            
+            // Escape to stop
+            if (e.key === 'Escape' && isSpeaking) {
+                stopSpeech();
+            }
+        }
+        
+        // Toggle speech
+        function toggleSpeech() {
+            if (isSpeaking) {
+                pauseSpeech();
+            } else {
+                startSpeech();
+            }
+        }
+        
+        // Start speech
+        function startSpeech() {
+            const text = textarea.value.trim();
+            
+            if (text === "") {
+                statusText.textContent = "Please enter some text to speak";
+                statusText.style.color = "#ff6b6b";
+                setTimeout(() => {
+                    statusText.style.color = "";
+                    statusText.textContent = "Ready to convert text to speech";
+                }, 2000);
+                return;
+            }
+            
+            // Stop any ongoing speech
+            window.speechSynthesis.cancel();
+            
+            // Create new utterance
+            utterance = new SpeechSynthesisUtterance(text);
+            
+            // Set voice
+            const selectedVoiceIndex = parseInt(voiceSelect.value);
+            utterance.voice = voices[selectedVoiceIndex];
+            
+            // Set properties
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            // Set up event handlers
+            utterance.onstart = () => {
+                isSpeaking = true;
+                startTime = Date.now();
+                playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                playButton.classList.remove('btn-play');
+                playButton.classList.add('btn-pause');
+                stopButton.disabled = false;
+                statusText.textContent = "Speaking...";
+                waveAnimation.classList.remove('hidden');
+                
+                // Start progress tracking
+                progressInterval = setInterval(updateProgress, 100);
+            };
+            
+            utterance.onend = () => {
+                isSpeaking = false;
+                clearInterval(progressInterval);
+                playButton.innerHTML = '<i class="fas fa-play"></i>';
+                playButton.classList.remove('btn-pause');
+                playButton.classList.add('btn-play');
+                stopButton.disabled = true;
+                progressBar.style.width = '100%';
+                statusText.textContent = "Finished";
+                waveAnimation.classList.add('hidden');
+            };
+            
+            utterance.onpause = () => {
+                isSpeaking = false;
+                clearInterval(progressInterval);
+                playButton.innerHTML = '<i class="fas fa-play"></i>';
+                playButton.classList.remove('btn-pause');
+                playButton.classList.add('btn-play');
+                statusText.textContent = "Paused";
+                waveAnimation.classList.add('hidden');
+            };
+            
+            utterance.onresume = () => {
+                isSpeaking = true;
+                startTime = Date.now() - (utterance.elapsedTime || 0) * 1000;
+                progressInterval = setInterval(updateProgress, 100);
+                playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                playButton.classList.remove('btn-play');
+                playButton.classList.add('btn-pause');
+                statusText.textContent = "Speaking...";
+                waveAnimation.classList.remove('hidden');
+            };
+            
+            utterance.onerror = (event) => {
+                console.error("Speech error:", event);
+                statusText.textContent = "Error occurred during speech";
+                statusText.style.color = "#ff6b6b";
+                resetUI();
+            };
+            
+            // Speak the utterance
+            window.speechSynthesis.speak(utterance);
+        }
+        
+        // Pause speech
+        function pauseSpeech() {
+            if (isSpeaking) {
+                window.speechSynthesis.pause();
+            }
+        }
+        
+        // Stop speech
+        function stopSpeech() {
+            window.speechSynthesis.cancel();
+            resetUI();
+        }
+        
+        // Reset UI to initial state
+        function resetUI() {
+            isSpeaking = false;
+            clearInterval(progressInterval);
+            progressBar.style.width = '0%';
+            playButton.innerHTML = '<i class="fas fa-play"></i>';
+            playButton.classList.remove('btn-pause');
+            playButton.classList.add('btn-play');
+            stopButton.disabled = true;
+            statusText.textContent = "Ready to convert text to speech";
+            statusText.style.color = "";
+            waveAnimation.classList.add('hidden');
+        }
+        
+        // Update progress bar
+        function updateProgress() {
+            if (!utterance) return;
+            
+            const elapsed = (Date.now() - startTime) / 1000; // in seconds
+            const progress = (elapsed / utterance.duration) * 100;
+            
+            if (progress <= 100) {
+                progressBar.style.width = `${progress}%`;
+            }
+        }
+        
+        // Initialize the app
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

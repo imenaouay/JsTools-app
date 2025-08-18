@@ -1,0 +1,268 @@
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a2a6c, #2c3e50);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        header {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00c6ff, #0072ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #a0aec0;
+            font-size: 1.1rem;
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .input-container {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            background: rgba(0, 10, 30, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 1.1rem;
+            color: #fff;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #00c6ff;
+            box-shadow: 0 0 0 3px rgba(0, 198, 255, 0.2);
+        }
+
+        textarea::placeholder {
+            color: #718096;
+        }
+
+        .char-count {
+            position: absolute;
+            bottom: 15px;
+            right: 20px;
+            color: #a0aec0;
+            font-size: 0.9rem;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 3px 8px;
+            border-radius: 10px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .voice-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 0.95rem;
+            color: #a0aec0;
+            font-weight: 500;
+        }
+
+        select {
+            background: rgba(0, 10, 30, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 12px 15px;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #00c6ff;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-play {
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+        }
+
+        .btn-stop {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+        }
+
+        .btn-pause {
+            background: linear-gradient(135deg, #f9d423, #ff4e50);
+        }
+
+        .progress-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00c6ff, #0072ff);
+            width: 0;
+            transition: width 0.1s linear;
+        }
+
+        .status {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+            color: #a0aec0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .wave-animation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 40px;
+            margin: 15px 0;
+        }
+
+        .wave {
+            width: 5px;
+            height: 30px;
+            background: #00c6ff;
+            margin: 0 3px;
+            border-radius: 10px;
+            animation: wave 1s infinite ease-in-out;
+        }
+
+        .wave:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .wave:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .wave:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        .wave:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes wave {
+            0%, 100% {
+                transform: scaleY(0.5);
+            }
+            50% {
+                transform: scaleY(1.5);
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                justify-content: center;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            textarea {
+                min-height: 150px;
+            }
+        }
